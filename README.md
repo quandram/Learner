@@ -1,2 +1,3 @@
 # Learner
-Dad doing dad things to help his kids practice what they learn
+
+I'm learning stuff - the kids are learning stuff... all good
