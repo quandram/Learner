@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, computed } from "vue";
 import DocumentationIcon from "../icons/IconDocumentation.vue";
+import RefreshIcon from "../icons/IconRefresh.vue";
 
 const props = defineProps<{
   userName: string;
@@ -11,21 +12,36 @@ const props = defineProps<{
 
 let selectedWords = ref([{ word: "", ok: false }]);
 
-const allCorrect = computed(() => {
-  return selectedWords.value.every((x) => x.ok);
+onBeforeMount(() => {
+  setWordList();
 });
 
-onBeforeMount(() => {
-  const shuffledFrom = [...props.from].sort(() => 0.5 - Math.random());
-  selectedWords.value = shuffledFrom.slice(0, props.x).map((x) => {
-    return { word: x, ok: false };
-  });
+const setWordList = function () {
+  console.log("woot");
+  selectedWords.value = shuffleWords()
+    .slice(0, props.x)
+    .map((x) => {
+      return { word: x, ok: false };
+    });
+};
+
+const shuffleWords = function () {
+  return [...props.from].sort(() => 0.5 - Math.random());
+};
+
+const allCorrect = computed(() => {
+  return selectedWords.value.every((x) => x.ok);
 });
 </script>
 
 <template>
   <div>
-    <h3><DocumentationIcon /> Select X from... {{ props.name }}</h3>
+    <div
+      style="display: flex; flex-direction: row; justify-content: space-between"
+    >
+      <h3><DocumentationIcon /> Select X from... {{ props.name }}</h3>
+      <RefreshIcon @icon-clicked="this.setWordList" />
+    </div>
     <div class="selected">
       <div
         v-for="x in selectedWords"
