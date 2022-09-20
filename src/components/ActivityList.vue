@@ -40,7 +40,6 @@ const user = computed(() => settings.users.find((u) => u.name === props.name));
             {{ section.data.x }} to get right!
           </ActivityListEntry>
         </div>
-        <div v-else-if="section.type === 'B'">LIAR!</div>
         <div v-else>
           <ActivityListEntry>
             <template #icon>

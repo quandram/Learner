@@ -1,23 +1,33 @@
 <script setup lang="ts">
-import { onBeforeMount, ref, computed } from "vue";
+import { onBeforeMount, ref, computed, watch } from "vue";
 import DocumentationIcon from "../icons/IconDocumentation.vue";
-import RefreshIcon from "../icons/IconRefresh.vue";
 
 const props = defineProps<{
   userName: string;
   name: string;
   x: number;
   from: Array<string>;
+  refresh: boolean;
 }>();
-
+const emit = defineEmits(["refreshCompleted"]);
 let selectedWords = ref([{ word: "", ok: false }]);
 
 onBeforeMount(() => {
   setWordList();
 });
 
+watch(
+  () => props.refresh,
+  (isRefreshing: boolean) => {
+    if (!isRefreshing) {
+      return;
+    }
+    setWordList();
+    emit("refreshCompleted");
+  }
+);
+
 const setWordList = function () {
-  console.log("woot");
   selectedWords.value = shuffleWords()
     .slice(0, props.x)
     .map((x) => {
@@ -36,11 +46,8 @@ const allCorrect = computed(() => {
 
 <template>
   <div>
-    <div
-      style="display: flex; flex-direction: row; justify-content: space-between"
-    >
+    <div>
       <h3><DocumentationIcon /> Select X from... {{ props.name }}</h3>
-      <RefreshIcon @icon-clicked="this.setWordList" />
     </div>
     <div class="selected">
       <div
