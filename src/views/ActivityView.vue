@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 import RefreshIcon from "../components/icons/IconRefresh.vue";
 import SelectX from "../components/activities/SelectX.vue";
+import Sums from "../components/activities/Sums.vue";
 import settings from "../appsettings.json";
 const props = defineProps<{
   name: string;
@@ -32,7 +33,15 @@ let isRefreshing = ref(false);
         @refreshCompleted="isRefreshing = false"
       />
     </div>
-    <div v-else>So, I haven't implemented {{ section.type }} yet</div>
+    <div v-else-if="section.type === 'Sums'">
+      <Sums
+        :userName="props.name"
+        :x="section.data.x"
+        :sumConfig="section.sumConfig"
+        :refresh="isRefreshing"
+        @refreshCompleted="isRefreshing = false"
+      />
+    </div>
     <div style="display: flex; justify-content: space-around">
       <RefreshIcon @icon-clicked="isRefreshing = true" />
     </div>

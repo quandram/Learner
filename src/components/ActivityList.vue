@@ -40,6 +40,15 @@ const user = computed(() => settings.users.find((u) => u.name === props.name));
             {{ section.data.x }} to get right!
           </ActivityListEntry>
         </div>
+        <div v-else-if="section.type === 'Sums'">
+          <ActivityListEntry>
+            <template #icon>
+              <DocumentationIcon />
+            </template>
+            <template #heading>{{ section.name }}</template>
+            {{ section.data.x }} to get right!
+          </ActivityListEntry>
+        </div>
         <div v-else>
           <ActivityListEntry>
             <template #icon>
