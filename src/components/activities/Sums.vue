@@ -11,7 +11,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits(["refreshCompleted"]);
 
-let sums = ref([{ word: "", ok: false }]);
+let sums = ref([{ ok: false }]);
 const maxCols = 6;
 onBeforeMount(() => {
   createSums();
@@ -40,8 +40,6 @@ const createSums = function () {
 
 const constructSum = function (config) {
   //
-  f++;
-  console.log(`f: ${f}`);
   const rowsToAdd =
     Math.floor(Math.random() * (config.rows.max - config.rows.min)) +
     config.rows.min;
@@ -61,21 +59,26 @@ const constructSum = function (config) {
     });
   }
   const sum = sumLines.reduce((prevValue, curValue) => {
-    console.log(curValue);
     if (curValue.o === undefined) {
       return curValue.n;
     }
     return mathFunctions[curValue.o](prevValue, curValue.n);
   }, 0);
-  console.log(sumLines);
-  console.log(sum);
   if (validateSum(config, sum)) {
-    return { sumLines, sum };
+    return {
+      sumLines,
+      sum,
+      total: Array(maxCols).fill(""),
+      carry: Array(maxCols - 1).fill(false),
+      ok: function () {
+        return Number(this.total.join("")) === this.sum;
+      },
+    };
   } else {
     return constructSum(config);
   }
 };
-let f = 0;
+
 const validateSum = function (config, sum) {
   if (config.isInteger && !Number.isInteger(sum)) {
     return false;
@@ -104,7 +107,7 @@ const mathFunctions = {
 };
 
 const allCorrect = computed(() => {
-  return sums.value.every((x) => x.ok);
+  return sums.value.every((x) => x.ok());
 });
 
 const numericalCellContents = function (n) {
@@ -121,6 +124,7 @@ const getNumericalCellClass = function (
   if (digitsInNumber + columnIndex - maxCols === -1) {
     return isFirstLine ? "cell-empty" : "cell-operator";
   }
+  return "cell-number";
 };
 </script>
 
@@ -131,10 +135,9 @@ const getNumericalCellClass = function (
     </div>
     <div class="selected">
       <div
-        v-for="s in sums"
-        :key="s.word"
-        :class="`x ${s.ok ? 'x-done' : ''} sum`"
-        @click="s.ok = !s.ok"
+        v-for="(s, sIndex) in sums"
+        :key="sIndex"
+        :class="`x ${s.ok() ? 'x-done' : ''} sum`"
       >
         <template v-for="(line, lIndex) in s.sumLines" :key="lIndex">
           <div
@@ -159,12 +162,22 @@ const getNumericalCellClass = function (
           </div>
         </template>
         <hr style="grid-column: 1/-1" />
-        <div
+        <input
           class="cell cell-total"
-          v-for="(n, nIndex) in String(s.sum).padStart(maxCols, '-')"
+          v-for="(n, nIndex) in maxCols"
           :key="nIndex"
+          v-model="s.total[nIndex]"
+          maxlength="1"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'');"
+        />
+        <hr style="grid-column: 1/-1" />
+        <div
+          v-for="(c, cIndex) in s.carry"
+          :key="cIndex"
+          class="cell cell-carry"
+          @click="s.carry[cIndex] = !c"
         >
-          {{ numericalCellContents(n) }}
+          {{ c ? "1" : "" }}
         </div>
       </div>
     </div>
@@ -180,7 +193,6 @@ const getNumericalCellClass = function (
 }
 .x {
   border: 1px dashed;
-  font-size: 2rem;
   margin: 0.5rem;
   padding: 0.5rem;
 }
@@ -196,11 +208,13 @@ const getNumericalCellClass = function (
   grid-gap: 5px;
 }
 .cell {
-  display: flex;
-  justify-content: center;
   align-items: center;
   border: 1px solid red;
+  display: flex;
+  font-size: 2rem;
+  justify-content: center;
   min-width: 40px;
+  min-height: 55px;
 }
 .cell-empty {
   border: 0px;
@@ -210,5 +224,13 @@ const getNumericalCellClass = function (
 }
 .cell-total {
   border-color: pink;
+  background-color: transparent;
+  color: white;
+  text-align: center;
+}
+.cell-carry {
+  border-color: yellow;
+  font-size: 1rem;
+  min-height: 28px;
 }
 </style>
