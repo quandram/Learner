@@ -39,9 +39,8 @@ const createSums = function () {
 };
 
 const constructSum = function (config) {
-  //
   const rowsToAdd =
-    Math.floor(Math.random() * (config.rows.max - config.rows.min)) +
+    Math.floor(Math.random() * (config.rows.max - config.rows.min + 1)) +
     config.rows.min;
   const minNum = Math.pow(10, config.digits.min - 1);
   const maxNum = Math.pow(10, config.digits.max) - 1;
