@@ -30,12 +30,17 @@ watch(
 
 const createSums = function () {
   sums.value = [];
+  let weightedConfigs = [];
+  props.sumConfig.map((x, index) => {
+    for (let i = 0; i < (x.weight || 1); i++) {
+      weightedConfigs.push(index);
+    }
+  });
   for (let i = 0; i < props.x; i++) {
     const configForSum =
-      props.sumConfig[Math.floor(Math.random() * props.sumConfig.length)];
-    sums.value.push(constructSum(configForSum));
+      weightedConfigs[Math.floor(Math.random() * weightedConfigs.length)];
+    sums.value.push(constructSum(props.sumConfig[configForSum]));
   }
-  console.log(sums);
 };
 
 const constructSum = function (config) {
@@ -83,10 +88,8 @@ const validateSum = function (config, sum) {
     return false;
   }
   if (config.isPositive && sum < 0) {
-    console.log(`validate: ${sum} - false`);
     return false;
   }
-  console.log(`validate: ${sum} true`);
   return true;
 };
 
