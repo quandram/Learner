@@ -83,7 +83,7 @@ const constructSum = function (config) {
       sumLines,
       sum,
       total: Array(maxCols).fill(""),
-      carry: Array(maxCols - 1).fill(false),
+      carry: Array(maxCols - 1).fill(""),
       ok: function () {
         return Number(this.total.join("")) === this.sum;
       },
@@ -177,17 +177,17 @@ const getNumericalCellClass = function (
           :key="nIndex"
           v-model="s.total[nIndex]"
           maxlength="1"
-          oninput="this.value=this.value.replace(/[^0-9]/g,'');"
+          oninput="this.value=this.value.replace(/[^\-0-9]/g,'');"
         />
         <hr style="grid-column: 1/-1" />
-        <div
+        <input
+          class="cell cell-carry"
           v-for="(c, cIndex) in s.carry"
           :key="cIndex"
-          class="cell cell-carry"
-          @click="s.carry[cIndex] = !c"
-        >
-          {{ c ? "1" : "" }}
-        </div>
+          v-model="s.carry[cIndex]"
+          maxlength="1"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'');"
+        />
       </div>
     </div>
   </div>
@@ -235,5 +235,6 @@ const getNumericalCellClass = function (
   border-color: yellow;
   font-size: 1rem;
   min-height: 28px;
+  text-align: center;
 }
 </style>
