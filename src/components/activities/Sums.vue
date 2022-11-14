@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, computed, watch } from "vue";
 import DocumentationIcon from "../icons/IconDocumentation.vue";
+import { evaluate } from "mathjs";
 
 const props = defineProps<{
   userName: string;
@@ -62,12 +63,15 @@ const constructSum = function (config) {
       o: config.operators[operator],
     });
   }
-  const sum = sumLines.reduce((prevValue, curValue) => {
-    if (curValue.o === undefined) {
-      return curValue.n;
-    }
-    return mathFunctions[curValue.o](prevValue, curValue.n);
-  }, 0);
+  const sum = evaluate(
+    sumLines.reduce((prevValue, curValue) => {
+      if (curValue.o === undefined) {
+        return `${curValue.n}`;
+      }
+      return `${prevValue} ${curValue.o} ${curValue.n}`;
+    }, "")
+  );
+
   if (validateSum(config, sum)) {
     return {
       sumLines,
@@ -91,21 +95,6 @@ const validateSum = function (config, sum) {
     return false;
   }
   return true;
-};
-
-const mathFunctions = {
-  "+": function (x: number, y: number) {
-    return x + y;
-  },
-  "-": function (x: number, y: number) {
-    return x - y;
-  },
-  "*": function (x: number, y: number) {
-    return x * y;
-  },
-  "/": function (x: number, y: number) {
-    return x / y;
-  },
 };
 
 const allCorrect = computed(() => {
