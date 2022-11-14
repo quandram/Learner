@@ -47,18 +47,25 @@ const constructSum = function (config) {
   const rowsToAdd =
     Math.floor(Math.random() * (config.rows.max - config.rows.min + 1)) +
     config.rows.min;
-  const minNum = Math.pow(10, config.digits.min - 1);
-  const maxNum = Math.pow(10, config.digits.max) - 1;
+
+  const getRandomNumberInRange = function () {
+    return (
+      Math.floor(Math.random() * (config.number.max - config.number.min + 1)) +
+      config.number.min
+    );
+  };
 
   const sumLines = [];
   for (let i = 0; i < rowsToAdd; i++) {
     if (i === 0) {
-      sumLines.push({ n: Math.floor(Math.random() * (maxNum - minNum)) });
+      sumLines.push({
+        n: getRandomNumberInRange(),
+      });
       continue;
     }
     const operator = Math.floor(Math.random() * config.operators.length);
     sumLines.push({
-      n: Math.floor(Math.random() * (maxNum - minNum)),
+      n: getRandomNumberInRange(),
       o: config.operators[operator],
     });
   }
