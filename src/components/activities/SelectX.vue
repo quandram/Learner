@@ -9,7 +9,7 @@ const props = defineProps<{
   from: Array<string>;
   refresh: boolean;
 }>();
-const emit = defineEmits(["refreshCompleted"]);
+const emit = defineEmits(["activityCompleted", "refreshCompleted"]);
 let selectedWords = ref([{ word: "", ok: false }]);
 
 onBeforeMount(() => {
@@ -40,7 +40,19 @@ const shuffleWords = function () {
 };
 
 const allCorrect = computed(() => {
-  return selectedWords.value.every((x) => x.ok);
+  let isAllCorrect = false;
+  try {
+    isAllCorrect = selectedWords.value.every((x) => x.ok);
+  } catch {
+    return isAllCorrect;
+  }
+  return isAllCorrect;
+});
+watch(allCorrect, (allCorrect: boolean) => {
+  if (!allCorrect) {
+    return;
+  }
+  emit("activityCompleted");
 });
 </script>
 
@@ -59,9 +71,6 @@ const allCorrect = computed(() => {
         {{ x.word }}
       </div>
     </div>
-    <div v-show="allCorrect" class="congratulations">
-      Well done {{ props.userName }}
-    </div>
   </div>
 </template>
 
@@ -77,8 +86,5 @@ const allCorrect = computed(() => {
 }
 .x-done {
   border: 1px solid;
-}
-.congratulations {
-  font-size: 4rem;
 }
 </style>

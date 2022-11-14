@@ -18,6 +18,12 @@ const section = computed(() => {
 });
 
 let isRefreshing = ref(false);
+let activityCompleted = ref(false);
+const refreshActivity = function () {
+  console.log("here");
+  activityCompleted.value = false;
+  isRefreshing.value = true;
+};
 </script>
 
 <template>
@@ -31,6 +37,7 @@ let isRefreshing = ref(false);
         :from="section.data.from"
         :refresh="isRefreshing"
         @refreshCompleted="isRefreshing = false"
+        @activityCompleted="activityCompleted = true"
       />
     </div>
     <div v-else-if="section.type === 'Sums'">
@@ -40,10 +47,21 @@ let isRefreshing = ref(false);
         :sumConfig="section.sumConfig"
         :refresh="isRefreshing"
         @refreshCompleted="isRefreshing = false"
+        @activityCompleted="activityCompleted = true"
       />
     </div>
     <div style="display: flex; justify-content: space-around">
-      <RefreshIcon @icon-clicked="isRefreshing = true" />
+      <RefreshIcon @icon-clicked="refreshActivity" />
+    </div>
+    <div v-show="activityCompleted" class="congratulations">
+      Well done {{ props.name }}!
     </div>
   </main>
 </template>
+
+<style scoped scss>
+.congratulations {
+  font-size: 4rem;
+  text-align: center;
+}
+</style>

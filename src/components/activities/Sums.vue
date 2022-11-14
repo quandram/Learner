@@ -5,12 +5,11 @@ import { evaluate } from "mathjs";
 
 const props = defineProps<{
   userName: string;
-  name: string;
   x: number;
   sumConfig: Object[];
   refresh: boolean;
 }>();
-const emit = defineEmits(["refreshCompleted"]);
+const emit = defineEmits(["activityCompleted", "refreshCompleted"]);
 
 let sums = ref([{ ok: false }]);
 const maxCols = 6;
@@ -98,7 +97,19 @@ const validateSum = function (config, sum) {
 };
 
 const allCorrect = computed(() => {
-  return sums.value.every((x) => x.ok());
+  let isAllCorrect = false;
+  try {
+    isAllCorrect = sums.value.every((x) => x.ok());
+  } catch {
+    return isAllCorrect;
+  }
+  return isAllCorrect;
+});
+watch(allCorrect, (allCorrect: boolean) => {
+  if (!allCorrect) {
+    return;
+  }
+  emit("activityCompleted");
 });
 
 const numericalCellContents = function (n) {
@@ -122,7 +133,7 @@ const getNumericalCellClass = function (
 <template>
   <div>
     <div>
-      <h3><DocumentationIcon /> Select X from... {{ props.name }}</h3>
+      <h3><DocumentationIcon /> Complete the sums</h3>
     </div>
     <div class="selected">
       <div
@@ -172,9 +183,6 @@ const getNumericalCellClass = function (
         </div>
       </div>
     </div>
-    <div v-show="allCorrect" class="congratulations">
-      Well done {{ props.userName }}
-    </div>
   </div>
 </template>
 
@@ -189,9 +197,6 @@ const getNumericalCellClass = function (
 }
 .x-done {
   border: 1px solid;
-}
-.congratulations {
-  font-size: 4rem;
 }
 .sum {
   display: grid;
