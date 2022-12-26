@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, computed, watch } from "vue";
-import DocumentationIcon from "../icons/IconDocumentation.vue";
-import ActivityTitle from "./ActivityTitle.vue";
 import ActivityWrap from "./ActivityWrap.vue";
 import { evaluate } from "mathjs";
 
@@ -11,12 +9,13 @@ const props = defineProps<{
   sumConfig: Object[];
   refresh: boolean;
 }>();
-const emit = defineEmits(["refreshCompleted", "progress"]);
+const emit = defineEmits(["refreshCompleted", "progress", "setTitle"]);
 
 let sums = ref([{ ok: false }]);
 const maxCols = 6;
 onBeforeMount(() => {
   createSums();
+  emit("setTitle", "Complete the sums");
 });
 
 watch(
@@ -122,7 +121,6 @@ const numericalCellContents = function (n) {
 
 <template>
   <div>
-    <ActivityTitle> <DocumentationIcon /> Complete the sums </ActivityTitle>
     <ActivityWrap>
       <div
         v-for="(s, sIndex) in sums"

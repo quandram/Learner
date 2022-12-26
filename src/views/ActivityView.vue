@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import RefreshIcon from "../components/icons/IconRefresh.vue";
+import ActivityTitle from "../components/activities/ActivityTitle.vue";
 import ActivityProgress from "../components/activities/ActivityProgress.vue";
 import SelectX from "../components/activities/SelectX.vue";
 import Sums from "../components/activities/Sums.vue";
@@ -20,6 +21,7 @@ const section = computed(() => {
 
 let isRefreshing = ref(false);
 let activityProgress = ref(0);
+let activityTitle = ref("");
 const refreshActivity = function () {
   activityProgress.value = 0;
   isRefreshing.value = true;
@@ -30,10 +32,12 @@ const refreshActivity = function () {
   <main>
     <div v-if="section === undefined">Loading...</div>
     <div v-else>
-      <ActivityProgress
-        :name="props.name"
-        :progress="activityProgress"
-      ></ActivityProgress>
+      <ActivityTitle :title="activityTitle">
+        <ActivityProgress
+          :name="props.name"
+          :progress="activityProgress"
+        ></ActivityProgress>
+      </ActivityTitle>
       <div v-if="section.type === 'SelectX'">
         <SelectX
           :userName="props.name"
@@ -41,6 +45,7 @@ const refreshActivity = function () {
           :x="section.data.x"
           :from="section.data.from"
           :refresh="isRefreshing"
+          @setTitle="activityTitle = $event"
           @refreshCompleted="isRefreshing = false"
           @progress="activityProgress = $event"
         />
@@ -52,6 +57,7 @@ const refreshActivity = function () {
           :sumConfig="section.sumConfig"
           :refresh="isRefreshing"
           @refreshCompleted="isRefreshing = false"
+          @setTitle="activityTitle = $event"
           @progress="activityProgress = $event"
         />
       </div>

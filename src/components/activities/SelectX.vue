@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, computed, watch } from "vue";
-import DocumentationIcon from "../icons/IconDocumentation.vue";
-import ActivityTitle from "./ActivityTitle.vue";
 import ActivityWrap from "./ActivityWrap.vue";
 
 const props = defineProps<{
@@ -11,11 +9,12 @@ const props = defineProps<{
   from: Array<string>;
   refresh: boolean;
 }>();
-const emit = defineEmits(["progress", "refreshCompleted"]);
+const emit = defineEmits(["progress", "refreshCompleted", "setTitle"]);
 let selectedWords = ref([{ word: "", ok: false }]);
 
 onBeforeMount(() => {
   setWordList();
+  emit("setTitle", `Select X from... ${props.name}`);
 });
 
 watch(
@@ -51,9 +50,6 @@ watch(correctEntries, (correctEntries: number) => {
 
 <template>
   <div>
-    <ActivityTitle>
-      <DocumentationIcon /> Select X from... {{ props.name }}
-    </ActivityTitle>
     <ActivityWrap>
       <div
         v-for="x in selectedWords"
