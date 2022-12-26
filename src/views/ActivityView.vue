@@ -3,8 +3,7 @@ import { computed, ref } from "vue";
 import RefreshIcon from "../components/icons/IconRefresh.vue";
 import ActivityTitle from "../components/activities/ActivityTitle.vue";
 import ActivityProgress from "../components/activities/ActivityProgress.vue";
-import SelectX from "../components/activities/SelectX.vue";
-import Sums from "../components/activities/Sums.vue";
+import ActivityContent from "./ActivityContent.vue";
 import settings from "../appsettings.json";
 const props = defineProps<{
   name: string;
@@ -38,29 +37,15 @@ const refreshActivity = function () {
           :progress="activityProgress"
         ></ActivityProgress>
       </ActivityTitle>
-      <div v-if="section.type === 'SelectX'">
-        <SelectX
-          :userName="props.name"
-          :name="section.name"
-          :x="section.data.x"
-          :from="section.data.from"
-          :refresh="isRefreshing"
-          @setTitle="activityTitle = $event"
-          @refreshCompleted="isRefreshing = false"
-          @progress="activityProgress = $event"
-        />
-      </div>
-      <div v-else-if="section.type === 'Sums'">
-        <Sums
-          :userName="props.name"
-          :x="section.data.x"
-          :sumConfig="section.sumConfig"
-          :refresh="isRefreshing"
-          @refreshCompleted="isRefreshing = false"
-          @setTitle="activityTitle = $event"
-          @progress="activityProgress = $event"
-        />
-      </div>
+      <ActivityContent
+        :name="props.name"
+        :section="section"
+        :is-refreshing="isRefreshing"
+        @setTitle="activityTitle = $event"
+        @refreshCompleted="isRefreshing = false"
+        @progress="activityProgress = $event"
+      >
+      </ActivityContent>
       <div style="display: flex; justify-content: space-around">
         <RefreshIcon @icon-clicked="refreshActivity" />
       </div>
