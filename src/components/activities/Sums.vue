@@ -124,19 +124,6 @@ watch(allCorrect, (allCorrect: boolean) => {
 const numericalCellContents = function (n) {
   return n !== "-" ? n : "";
 };
-const getNumericalCellClass = function (
-  digitsInNumber: number,
-  columnIndex: number,
-  isFirstLine: boolean
-) {
-  if (digitsInNumber + columnIndex - maxCols < -1) {
-    return "cell-empty";
-  }
-  if (digitsInNumber + columnIndex - maxCols === -1) {
-    return isFirstLine ? "cell-empty" : "cell-operator";
-  }
-  return "cell-number";
-};
 </script>
 
 <template>
@@ -150,25 +137,23 @@ const getNumericalCellClass = function (
       >
         <template v-for="(line, lIndex) in s.sumLines" :key="lIndex">
           <div
-            :class="`cell ${getNumericalCellClass(
-              String(line.n).length,
-              nIndex,
-              lIndex === 0
-            )}`"
+            :class="`cell ${
+              String(line.n).length + nIndex - maxCols < 0
+                ? 'cell-empty'
+                : 'cell-number'
+            }`"
             v-for="(n, nIndex) in String(line.n).padStart(maxCols, '-')"
             :key="nIndex"
           >
-            <span v-if="String(line.n).length + nIndex - maxCols < -1"></span>
-            <span
-              v-else-if="
-                lIndex > 0 && String(line.n).length + nIndex - maxCols === -1
-              "
-            >
-              {{ line.o }}
-            </span>
+            <span v-if="String(line.n).length + nIndex - maxCols < 0"></span>
 
             <span>{{ numericalCellContents(n) }}</span>
           </div>
+          <span
+            :class="`cell ${lIndex === 0 ? 'cell-empty' : 'cell-operator'}`"
+          >
+            {{ line.o }}
+          </span>
         </template>
         <hr style="grid-column: 1/-1" />
         <input
@@ -204,7 +189,7 @@ const getNumericalCellClass = function (
 }
 .sum {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   grid-gap: 5px;
 }
 .cell {
