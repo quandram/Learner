@@ -11,7 +11,7 @@ const props = defineProps<{
   sumConfig: Object[];
   refresh: boolean;
 }>();
-const emit = defineEmits(["activityCompleted", "refreshCompleted"]);
+const emit = defineEmits(["refreshCompleted", "progress"]);
 
 let sums = ref([{ ok: false }]);
 const maxCols = 6;
@@ -105,20 +105,14 @@ const validateSum = function (config, sum) {
   return true;
 };
 
-const allCorrect = computed(() => {
-  let isAllCorrect = false;
-  try {
-    isAllCorrect = sums.value.every((x) => x.ok());
-  } catch {
-    return isAllCorrect;
-  }
-  return isAllCorrect;
-});
-watch(allCorrect, (allCorrect: boolean) => {
-  if (!allCorrect) {
+const correctEntries = computed(() => {
+  if (sums.value[0].ok === false) {
     return;
   }
-  emit("activityCompleted");
+  return sums.value.filter((x) => x.ok()).length;
+});
+watch(correctEntries, (correctEntries: number) => {
+  emit("progress", correctEntries / props.x);
 });
 
 const numericalCellContents = function (n) {

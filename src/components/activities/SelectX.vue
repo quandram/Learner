@@ -11,7 +11,7 @@ const props = defineProps<{
   from: Array<string>;
   refresh: boolean;
 }>();
-const emit = defineEmits(["activityCompleted", "refreshCompleted"]);
+const emit = defineEmits(["progress", "refreshCompleted"]);
 let selectedWords = ref([{ word: "", ok: false }]);
 
 onBeforeMount(() => {
@@ -41,20 +41,11 @@ const shuffleWords = function () {
   return [...props.from].sort(() => 0.5 - Math.random());
 };
 
-const allCorrect = computed(() => {
-  let isAllCorrect = false;
-  try {
-    isAllCorrect = selectedWords.value.every((x) => x.ok);
-  } catch {
-    return isAllCorrect;
-  }
-  return isAllCorrect;
+const correctEntries = computed(() => {
+  return selectedWords.value.filter((x) => x.ok).length;
 });
-watch(allCorrect, (allCorrect: boolean) => {
-  if (!allCorrect) {
-    return;
-  }
-  emit("activityCompleted");
+watch(correctEntries, (correctEntries: number) => {
+  emit("progress", correctEntries / props.x);
 });
 </script>
 
