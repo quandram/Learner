@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import RefreshIcon from "../components/icons/IconRefresh.vue";
+import ActivityCompleted from "../components/activities/ActivityCompleted.vue";
 import SelectX from "../components/activities/SelectX.vue";
 import Sums from "../components/activities/Sums.vue";
 import settings from "../appsettings.json";
@@ -53,15 +54,9 @@ const refreshActivity = function () {
     <div style="display: flex; justify-content: space-around">
       <RefreshIcon @icon-clicked="refreshActivity" />
     </div>
-    <div v-show="activityCompleted" class="congratulations">
-      Well done {{ props.name }}!
-    </div>
+    <ActivityCompleted
+      v-show="activityCompleted"
+      :name="props.name"
+    ></ActivityCompleted>
   </main>
 </template>
-
-<style scoped scss>
-.congratulations {
-  font-size: 4rem;
-  text-align: center;
-}
-</style>
