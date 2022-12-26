@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, computed, watch } from "vue";
 import DocumentationIcon from "../icons/IconDocumentation.vue";
+import ActivityTitle from "./ActivityTitle.vue";
+import ActivityWrap from "./ActivityWrap.vue";
 
 const props = defineProps<{
   userName: string;
@@ -58,10 +60,10 @@ watch(allCorrect, (allCorrect: boolean) => {
 
 <template>
   <div>
-    <div>
-      <h3><DocumentationIcon /> Select X from... {{ props.name }}</h3>
-    </div>
-    <div class="selected">
+    <ActivityTitle>
+      <DocumentationIcon /> Select X from... {{ props.name }}
+    </ActivityTitle>
+    <ActivityWrap>
       <div
         v-for="x in selectedWords"
         :key="x.word"
@@ -70,14 +72,11 @@ watch(allCorrect, (allCorrect: boolean) => {
       >
         {{ x.word }}
       </div>
-    </div>
+    </ActivityWrap>
   </div>
 </template>
 
 <style scoped scss>
-.selected {
-  display: flex;
-}
 .x {
   border: 1px dashed;
   font-size: 2rem;

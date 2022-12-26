@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, computed, watch } from "vue";
 import DocumentationIcon from "../icons/IconDocumentation.vue";
+import ActivityTitle from "./ActivityTitle.vue";
+import ActivityWrap from "./ActivityWrap.vue";
 import { evaluate } from "mathjs";
 
 const props = defineProps<{
@@ -139,10 +141,8 @@ const getNumericalCellClass = function (
 
 <template>
   <div>
-    <div>
-      <h3><DocumentationIcon /> Complete the sums</h3>
-    </div>
-    <div class="selected">
+    <ActivityTitle> <DocumentationIcon /> Complete the sums </ActivityTitle>
+    <ActivityWrap>
       <div
         v-for="(s, sIndex) in sums"
         :key="sIndex"
@@ -189,14 +189,11 @@ const getNumericalCellClass = function (
           oninput="this.value=this.value.replace(/[^0-9]/g,'');"
         />
       </div>
-    </div>
+    </ActivityWrap>
   </div>
 </template>
 
 <style scoped scss>
-.selected {
-  display: flex;
-}
 .x {
   border: 1px dashed;
   margin: 0.5rem;
