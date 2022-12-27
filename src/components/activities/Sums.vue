@@ -13,6 +13,7 @@ const emit = defineEmits(["refreshCompleted", "progress", "setTitle"]);
 
 let sums = ref([{ ok: false }]);
 const maxCols = 6;
+const placeHolderValue = "~";
 onBeforeMount(() => {
   createSums();
   emit("setTitle", "Complete the sums");
@@ -78,15 +79,30 @@ const constructSum = function (config) {
       return `${prevValue} ${curValue.o} ${curValue.n}`;
     }, "")
   );
-
   if (validateSum(config, sum)) {
+    sumLines.map((x) => {
+      x.cells = [...String(x.n).padStart(maxCols, placeHolderValue)].map(
+        (y) => {
+          return { value: y, isShown: true };
+        }
+      );
+      x.cells.push({
+        value: x.o !== undefined ? x.o : placeHolderValue,
+        isShown: true,
+      });
+    });
     return {
       sumLines,
       sum,
-      total: Array(maxCols).fill(""),
+      totalCells: [...String(sum).padStart(maxCols, placeHolderValue)].map(
+        (x) => {
+          return { value: x, isShown: false };
+        }
+      ),
+      inputTotal: Array(maxCols).fill(""),
       carry: Array(maxCols - 1).fill(""),
       ok: function () {
-        return Number(this.total.join("")) === this.sum;
+        return Number(this.inputTotal.join("")) === this.sum;
       },
     };
   } else {
@@ -113,10 +129,6 @@ const correctEntries = computed(() => {
 watch(correctEntries, (correctEntries: number) => {
   emit("progress", correctEntries / props.x);
 });
-
-const numericalCellContents = function (n) {
-  return n !== "-" ? n : "";
-};
 </script>
 
 <template>
@@ -128,34 +140,33 @@ const numericalCellContents = function (n) {
         :class="`x ${s.ok() ? 'x-done' : ''} sum`"
       >
         <template v-for="(line, lIndex) in s.sumLines" :key="lIndex">
-          <div
-            :class="`cell ${
-              String(line.n).length + nIndex - maxCols < 0
-                ? 'cell-empty'
-                : 'cell-number'
-            }`"
-            v-for="(n, nIndex) in String(line.n).padStart(maxCols, '-')"
-            :key="nIndex"
-          >
-            <span v-if="String(line.n).length + nIndex - maxCols < 0"></span>
-
-            <span>{{ numericalCellContents(n) }}</span>
-          </div>
-          <span
-            :class="`cell ${lIndex === 0 ? 'cell-empty' : 'cell-operator'}`"
-          >
-            {{ line.o }}
-          </span>
+          <template v-for="(n, nIndex) in line.cells" :key="nIndex">
+            <span v-if="n.value === placeHolderValue"></span>
+            <span
+              v-else
+              :class="`cell ${
+                nIndex === maxCols
+                  ? 'cell-operator'
+                  : n.isShown
+                  ? 'cell-number'
+                  : 'cell-empty'
+              }`"
+              >{{ n.value }}</span
+            >
+          </template>
         </template>
         <hr style="grid-column: 1/-1" />
-        <input
-          class="cell cell-total"
-          v-for="(n, nIndex) in maxCols"
-          :key="nIndex"
-          v-model="s.total[nIndex]"
-          maxlength="1"
-          oninput="this.value=this.value.replace(/[^\-0-9]/g,'');"
-        />
+        <template v-for="(n, nIndex) in s.totalCells" :key="nIndex">
+          <input
+            v-if="!n.isShown"
+            v-model="s.inputTotal[nIndex]"
+            class="cell cell-total"
+            maxlength="1"
+            oninput="this.value=this.value.replace(/[^\-0-9]/g,'');"
+          />
+          <span v-else-if="n.value === placeHolderValue"></span>
+          <span v-else class="cell cell-total">{{ n.value }}</span>
+        </template>
         <hr style="grid-column: 1/-1" />
         <input
           class="cell cell-carry"
