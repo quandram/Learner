@@ -24,6 +24,7 @@ const props = defineProps<{
     <Sums
       :userName="props.name"
       :x="props.section.data.x"
+      :type="props.section.data.type"
       :sumConfig="props.section.sumConfig"
       :refresh="props.isRefreshing"
       v-bind="$attrs"

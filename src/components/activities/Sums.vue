@@ -7,6 +7,7 @@ import { evaluate } from "mathjs";
 const props = defineProps<{
   userName: string;
   x: number;
+  type: { type: string; default: "sum" };
   sumConfig: Object[];
   refresh: boolean;
 }>();
@@ -15,6 +16,9 @@ const emit = defineEmits(["refreshCompleted", "progress", "setTitle"]);
 let sums = ref([{ ok: false }]);
 const maxCols = 6;
 const placeHolderValue = "~";
+const configTypes = {
+  redacted: "redacted",
+};
 const cellTypes = {
   empty: 0,
   number: 1,
@@ -87,34 +91,70 @@ const constructSum = function (config) {
     }, "")
   );
   if (validateSum(config, sum)) {
-    sumLines.map((x) => {
+    let cellIds = [];
+    sumLines.map((x, xIndex) => {
       x.cells = [...String(x.n).padStart(maxCols, placeHolderValue)].map(
-        (y) => {
+        (y, yIndex) => {
+          if (y === placeHolderValue) {
+            return {
+              value: y,
+              isCorrect: true,
+              type: cellTypes.empty,
+            };
+          }
+          cellIds.push([xIndex, yIndex]);
           return {
             value: y,
             isShown: true,
-            isCorrect: y === placeHolderValue ? true : false,
-            type: y === placeHolderValue ? cellTypes.empty : cellTypes.number,
+            isCorrect: false,
+            type: cellTypes.number,
           };
         }
       );
-      x.cells.push({
-        value: x.o === undefined ? placeHolderValue : x.o,
-        isShown: true,
-        isCorrect: x.o === undefined ? true : false,
-        type: x.o === undefined ? cellTypes.empty : cellTypes.operator,
-      });
+      if (x.o === undefined) {
+        x.cells.push({
+          value: placeHolderValue,
+          isShown: true,
+          isCorrect: true,
+          type: cellTypes.empty,
+        });
+      } else {
+        cellIds.push([xIndex, maxCols]);
+        x.cells.push({
+          value: x.o,
+          isShown: true,
+          isCorrect: false,
+          type: cellTypes.operator,
+        });
+      }
     });
     sumLines.push({
-      cells: [...String(sum).padStart(maxCols, placeHolderValue)].map((x) => {
-        return {
-          value: x,
-          isShown: false,
-          isCorrect: x === placeHolderValue ? true : false,
-          type: x === placeHolderValue ? cellTypes.empty : cellTypes.total,
-        };
-      }),
+      cells: [...String(sum).padStart(maxCols, placeHolderValue)].map(
+        (x, xIndex) => {
+          if (x === placeHolderValue) {
+            return {
+              value: x,
+              isShown: false,
+              isCorrect: true,
+              type: cellTypes.empty,
+            };
+          }
+          cellIds.push([sumLines.length, xIndex]);
+          return {
+            value: x,
+            isShown: props.type === configTypes.redacted ? true : false,
+            isCorrect: false,
+            type: cellTypes.total,
+          };
+        }
+      ),
     });
+    if (props.type === configTypes.redacted) {
+      const redactedCell = Math.floor(Math.random() * cellIds.length);
+      sumLines[cellIds[redactedCell][0]].cells[
+        cellIds[redactedCell][1]
+      ].isShown = false;
+    }
     return {
       sumLines,
       carry: Array(maxCols - 1).fill(""),
