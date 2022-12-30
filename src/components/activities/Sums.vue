@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, computed, watch } from "vue";
 import ActivityWrap from "./ActivityWrap.vue";
+import OptionalInputCell from "../OptionalInputCell.vue";
 import { evaluate } from "mathjs";
 
 const props = defineProps<{
@@ -96,13 +97,16 @@ const constructSum = function (config) {
       sum,
       totalCells: [...String(sum).padStart(maxCols, placeHolderValue)].map(
         (x) => {
-          return { value: x, isShown: false };
+          return {
+            value: x,
+            isShown: false,
+            isCorrect: x === placeHolderValue ? true : false,
+          };
         }
       ),
-      inputTotal: Array(maxCols).fill(""),
       carry: Array(maxCols - 1).fill(""),
       ok: function () {
-        return Number(this.inputTotal.join("")) === this.sum;
+        return this.totalCells.every((x) => x.isCorrect === true);
       },
     };
   } else {
@@ -157,15 +161,14 @@ watch(correctEntries, (correctEntries: number) => {
         </template>
         <hr style="grid-column: 1/-1" />
         <template v-for="(n, nIndex) in s.totalCells" :key="nIndex">
-          <input
-            v-if="!n.isShown"
-            v-model="s.inputTotal[nIndex]"
-            class="cell cell-total"
-            maxlength="1"
-            oninput="this.value=this.value.replace(/[^\-0-9]/g,'');"
-          />
-          <span v-else-if="n.value === placeHolderValue"></span>
-          <span v-else class="cell cell-total">{{ n.value }}</span>
+          <span v-if="n.value === placeHolderValue"></span>
+          <span v-else class="cell cell-total">
+            <OptionalInputCell
+              :value="n.value"
+              :isValueShown="n.isShown"
+              @isCorrect="s.totalCells[nIndex].isCorrect = $event"
+            />
+          </span>
         </template>
         <hr style="grid-column: 1/-1" />
         <input
@@ -212,9 +215,6 @@ watch(correctEntries, (correctEntries: number) => {
 }
 .cell-total {
   border-color: pink;
-  background-color: transparent;
-  color: white;
-  text-align: center;
 }
 .cell-carry {
   border-color: yellow;
