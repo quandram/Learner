@@ -15,6 +15,12 @@ const emit = defineEmits(["refreshCompleted", "progress", "setTitle"]);
 let sums = ref([{ ok: false }]);
 const maxCols = 6;
 const placeHolderValue = "~";
+const cellTypes = {
+  empty: 0,
+  number: 1,
+  operator: 2,
+  total: 3,
+};
 onBeforeMount(() => {
   createSums();
   emit("setTitle", "Complete the sums");
@@ -88,6 +94,7 @@ const constructSum = function (config) {
             value: y,
             isShown: true,
             isCorrect: y === placeHolderValue ? true : false,
+            type: y === placeHolderValue ? cellTypes.empty : cellTypes.number,
           };
         }
       );
@@ -95,26 +102,25 @@ const constructSum = function (config) {
         value: x.o === undefined ? placeHolderValue : x.o,
         isShown: true,
         isCorrect: x.o === undefined ? true : false,
+        type: x.o === undefined ? cellTypes.empty : cellTypes.operator,
       });
+    });
+    sumLines.push({
+      cells: [...String(sum).padStart(maxCols, placeHolderValue)].map((x) => {
+        return {
+          value: x,
+          isShown: false,
+          isCorrect: x === placeHolderValue ? true : false,
+          type: x === placeHolderValue ? cellTypes.empty : cellTypes.total,
+        };
+      }),
     });
     return {
       sumLines,
-      sum,
-      totalCells: [...String(sum).padStart(maxCols, placeHolderValue)].map(
-        (x) => {
-          return {
-            value: x,
-            isShown: false,
-            isCorrect: x === placeHolderValue ? true : false,
-          };
-        }
-      ),
       carry: Array(maxCols - 1).fill(""),
       ok: function () {
-        return (
-          this.sumLines.every((x) =>
-            x.cells.every((y) => y.isCorrect === true)
-          ) && this.totalCells.every((x) => x.isCorrect === true)
+        return this.sumLines.every((x) =>
+          x.cells.every((y) => y.isCorrect === true)
         );
       },
     };
@@ -142,6 +148,21 @@ const correctEntries = computed(() => {
 watch(correctEntries, (correctEntries: number) => {
   emit("progress", correctEntries / props.x);
 });
+
+const getCellTypeCSSClass = function (type: number) {
+  switch (type) {
+    case cellTypes.empty:
+      return "cell-empty";
+    case cellTypes.number:
+      return "cell-number";
+    case cellTypes.operator:
+      return "cell-operator";
+    case cellTypes.total:
+      return "cell-total";
+    default:
+      break;
+  }
+};
 </script>
 
 <template>
@@ -153,35 +174,19 @@ watch(correctEntries, (correctEntries: number) => {
         :class="`x ${s.ok() ? 'x-done' : ''} sum`"
       >
         <template v-for="(line, lIndex) in s.sumLines" :key="lIndex">
+          <hr
+            v-if="lIndex === s.sumLines.length - 1"
+            style="grid-column: 1/-1"
+          />
           <template v-for="(n, nIndex) in line.cells" :key="nIndex">
             <span v-if="n.value === placeHolderValue"></span>
-            <span
-              v-else
-              :class="`cell ${
-                nIndex === maxCols
-                  ? 'cell-operator'
-                  : n.isShown
-                  ? 'cell-number'
-                  : 'cell-empty'
-              }`"
-            >
+            <span v-else :class="`cell ${getCellTypeCSSClass(n.type)}`">
               <OptionalInputCell
                 :value="n.value"
                 :isValueShown="n.isShown"
                 @isCorrect="n.isCorrect = $event"
             /></span>
           </template>
-        </template>
-        <hr style="grid-column: 1/-1" />
-        <template v-for="(n, nIndex) in s.totalCells" :key="nIndex">
-          <span v-if="n.value === placeHolderValue"></span>
-          <span v-else class="cell cell-total">
-            <OptionalInputCell
-              :value="n.value"
-              :isValueShown="n.isShown"
-              @isCorrect="s.totalCells[nIndex].isCorrect = $event"
-            />
-          </span>
         </template>
         <hr style="grid-column: 1/-1" />
         <input
