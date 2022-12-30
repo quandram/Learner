@@ -84,12 +84,17 @@ const constructSum = function (config) {
     sumLines.map((x) => {
       x.cells = [...String(x.n).padStart(maxCols, placeHolderValue)].map(
         (y) => {
-          return { value: y, isShown: true };
+          return {
+            value: y,
+            isShown: true,
+            isCorrect: y === placeHolderValue ? true : false,
+          };
         }
       );
       x.cells.push({
-        value: x.o !== undefined ? x.o : placeHolderValue,
+        value: x.o === undefined ? placeHolderValue : x.o,
         isShown: true,
+        isCorrect: x.o === undefined ? true : false,
       });
     });
     return {
@@ -106,7 +111,11 @@ const constructSum = function (config) {
       ),
       carry: Array(maxCols - 1).fill(""),
       ok: function () {
-        return this.totalCells.every((x) => x.isCorrect === true);
+        return (
+          this.sumLines.every((x) =>
+            x.cells.every((y) => y.isCorrect === true)
+          ) && this.totalCells.every((x) => x.isCorrect === true)
+        );
       },
     };
   } else {
@@ -155,8 +164,12 @@ watch(correctEntries, (correctEntries: number) => {
                   ? 'cell-number'
                   : 'cell-empty'
               }`"
-              >{{ n.value }}</span
             >
+              <OptionalInputCell
+                :value="n.value"
+                :isValueShown="n.isShown"
+                @isCorrect="n.isCorrect = $event"
+            /></span>
           </template>
         </template>
         <hr style="grid-column: 1/-1" />

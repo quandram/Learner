@@ -10,7 +10,11 @@ let userValue = ref("");
 watch(
   userValue,
   (userValue: string) => {
-    emit("isCorrect", userValue === props.value);
+    if (props.isValueShown) {
+      emit("isCorrect", true);
+    } else {
+      emit("isCorrect", userValue === props.value);
+    }
   },
   { immediate: true }
 );
