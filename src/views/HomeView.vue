@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ActivityList from "@/components/ActivityList.vue";
+import ActivityStructureList from "@/components/activityStructure/ActivityStructureList.vue";
 defineProps<{
   name: string;
 }>();
@@ -7,6 +7,6 @@ defineProps<{
 
 <template>
   <main>
-    <ActivityList :name="name" />
+    <ActivityStructureList :name="name" />
   </main>
 </template>

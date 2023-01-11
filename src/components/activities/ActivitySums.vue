@@ -1,30 +1,42 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, computed, watch } from "vue";
-import ActivityWrap from "./ActivityWrap.vue";
+import ActivityStructureWrap from "../activityStructure/ActivityStructureWrap.vue";
 import OptionalInputCell from "../OptionalInputCell.vue";
 import { evaluate } from "mathjs";
+import { ConfigTypes } from "../../types/ConfigTypes";
+import type { SumOperator } from "../../types/SumOperatorType";
+import type { CellValue } from "../../types/CellValueType";
+import type { SumConfig } from "../../types/SumConfigType";
+import type { Sum } from "../../types/SumType";
+import type { Cell } from "../../types/CellType";
+import type { CellArray } from "../../types/CellArrayType";
+import { CellType } from "../../types/CellTypeType";
 
-const props = defineProps<{
-  userName: string;
-  x: number;
-  type: { type: string; default: "sum" };
-  sumConfig: Object[];
-  refresh: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    userName: string;
+    x: number;
+    type: string;
+    config: SumConfig[];
+    refresh: boolean;
+  }>(),
+  {
+    type: ConfigTypes.sum,
+  }
+);
 const emit = defineEmits(["refreshCompleted", "progress", "setTitle"]);
 
-let sums = ref([{ ok: false }]);
+let sums = ref<Array<Sum>>([
+  {
+    sumLines: [],
+    carry: [],
+    ok() {
+      return false;
+    },
+  },
+]);
 const maxCols = 6;
-const placeHolderValue = "~";
-const configTypes = {
-  redacted: "redacted",
-};
-const cellTypes = {
-  empty: 0,
-  number: 1,
-  operator: 2,
-  total: 3,
-};
+
 onBeforeMount(() => {
   createSums();
   emit("setTitle", "Complete the sums");
@@ -43,8 +55,8 @@ watch(
 
 const createSums = function () {
   sums.value = [];
-  let weightedConfigs = [];
-  props.sumConfig.map((x, index) => {
+  let weightedConfigs: number[] = [];
+  props.config.map((x, index) => {
     for (let i = 0; i < (x.weight || 1); i++) {
       weightedConfigs.push(index);
     }
@@ -52,11 +64,17 @@ const createSums = function () {
   for (let i = 0; i < props.x; i++) {
     const configForSum =
       weightedConfigs[Math.floor(Math.random() * weightedConfigs.length)];
-    sums.value.push(constructSum(props.sumConfig[configForSum]));
+    sums.value.push(constructSum(props.config[configForSum]));
   }
 };
-
-const constructSum = function (config) {
+const getBullshitArray = function (x: number | undefined): CellValue[] {
+  const a = String(x);
+  const c = a.padStart(maxCols, "~");
+  const d = [...c];
+  const e = d.map((x: string) => x as CellValue);
+  return e;
+};
+const constructSum = function (config: SumConfig): Sum {
   const rowsToAdd =
     Math.floor(Math.random() * (config.rows.max - config.rows.min + 1)) +
     config.rows.min;
@@ -68,19 +86,23 @@ const constructSum = function (config) {
     );
   };
 
-  const sumLines = [];
+  const getSumLineObject = function (operator?: SumOperator): CellArray {
+    const cellArray: Cell[] = [];
+    return {
+      n: getRandomNumberInRange(),
+      o: operator,
+      cells: cellArray,
+    };
+  };
+
+  const sumLines: CellArray[] = [];
   for (let i = 0; i < rowsToAdd; i++) {
     if (i === 0) {
-      sumLines.push({
-        n: getRandomNumberInRange(),
-      });
+      sumLines.push(getSumLineObject());
       continue;
     }
     const operator = Math.floor(Math.random() * config.operators.length);
-    sumLines.push({
-      n: getRandomNumberInRange(),
-      o: config.operators[operator],
-    });
+    sumLines.push(getSumLineObject(config.operators[operator]));
   }
   const sum = evaluate(
     sumLines.reduce((prevValue, curValue) => {
@@ -90,33 +112,33 @@ const constructSum = function (config) {
       return `${prevValue} ${curValue.o} ${curValue.n}`;
     }, "")
   );
+
   if (validateSum(config, sum)) {
-    let cellIds = [];
+    let cellIds: number[][] = [];
     sumLines.map((x, xIndex) => {
-      x.cells = [...String(x.n).padStart(maxCols, placeHolderValue)].map(
-        (y, yIndex) => {
-          if (y === placeHolderValue) {
-            return {
-              value: y,
-              isCorrect: true,
-              type: cellTypes.empty,
-            };
-          }
-          cellIds.push([xIndex, yIndex]);
+      x.cells = getBullshitArray(x.n).map((y, yIndex) => {
+        if (y === "~") {
           return {
-            value: y,
-            isShown: true,
-            isCorrect: false,
-            type: cellTypes.number,
+            value: undefined,
+            isShown: false,
+            isCorrect: true,
+            type: CellType.empty,
           };
         }
-      );
+        cellIds.push([xIndex, yIndex]);
+        return {
+          value: y,
+          isShown: true,
+          isCorrect: false,
+          type: CellType.number,
+        };
+      });
       if (x.o === undefined) {
         x.cells.push({
-          value: placeHolderValue,
+          value: undefined,
           isShown: true,
           isCorrect: true,
-          type: cellTypes.empty,
+          type: CellType.empty,
         });
       } else {
         cellIds.push([xIndex, maxCols]);
@@ -124,32 +146,32 @@ const constructSum = function (config) {
           value: x.o,
           isShown: true,
           isCorrect: false,
-          type: cellTypes.operator,
+          type: CellType.operator,
         });
       }
     });
     sumLines.push({
-      cells: [...String(sum).padStart(maxCols, placeHolderValue)].map(
-        (x, xIndex) => {
-          if (x === placeHolderValue) {
-            return {
-              value: x,
-              isShown: false,
-              isCorrect: true,
-              type: cellTypes.empty,
-            };
-          }
-          cellIds.push([sumLines.length, xIndex]);
+      n: undefined,
+      o: undefined,
+      cells: getBullshitArray(sum).map((x: CellValue, xIndex) => {
+        if (x === "~") {
           return {
-            value: x,
-            isShown: props.type === configTypes.redacted ? true : false,
-            isCorrect: false,
-            type: cellTypes.total,
+            value: undefined,
+            isShown: false,
+            isCorrect: true,
+            type: CellType.empty,
           };
         }
-      ),
+        cellIds.push([sumLines.length, xIndex]);
+        return {
+          value: x,
+          isShown: props.type == ConfigTypes.redacted ? true : false,
+          isCorrect: false,
+          type: CellType.total,
+        };
+      }),
     });
-    if (props.type === configTypes.redacted) {
+    if (props.type == ConfigTypes.redacted) {
       const redactedCell = Math.floor(Math.random() * cellIds.length);
       sumLines[cellIds[redactedCell][0]].cells[
         cellIds[redactedCell][1]
@@ -169,7 +191,7 @@ const constructSum = function (config) {
   }
 };
 
-const validateSum = function (config, sum) {
+const validateSum = function (config: SumConfig, sum: number): boolean {
   if (config.isInteger && !Number.isInteger(sum)) {
     return false;
   }
@@ -180,8 +202,10 @@ const validateSum = function (config, sum) {
 };
 
 const correctEntries = computed(() => {
-  if (sums.value[0].ok === false) {
-    return;
+  console.log("correctEntries");
+  console.log(sums.value);
+  if (sums.value[0].ok() === false) {
+    return 0;
   }
   return sums.value.filter((x) => x.ok()).length;
 });
@@ -191,13 +215,13 @@ watch(correctEntries, (correctEntries: number) => {
 
 const getCellTypeCSSClass = function (type: number) {
   switch (type) {
-    case cellTypes.empty:
+    case CellType.empty:
       return "cell-empty";
-    case cellTypes.number:
+    case CellType.number:
       return "cell-number";
-    case cellTypes.operator:
+    case CellType.operator:
       return "cell-operator";
-    case cellTypes.total:
+    case CellType.total:
       return "cell-total";
     default:
       break;
@@ -207,7 +231,7 @@ const getCellTypeCSSClass = function (type: number) {
 
 <template>
   <div>
-    <ActivityWrap>
+    <ActivityStructureWrap>
       <div
         v-for="(s, sIndex) in sums"
         :key="sIndex"
@@ -219,7 +243,7 @@ const getCellTypeCSSClass = function (type: number) {
             style="grid-column: 1/-1"
           />
           <template v-for="(n, nIndex) in line.cells" :key="nIndex">
-            <span v-if="n.value === placeHolderValue"></span>
+            <span v-if="n.value === undefined"></span>
             <span v-else :class="`cell ${getCellTypeCSSClass(n.type)}`">
               <OptionalInputCell
                 :value="n.value"
@@ -238,7 +262,7 @@ const getCellTypeCSSClass = function (type: number) {
           oninput="this.value=this.value.replace(/[^0-9]/g,'');"
         />
       </div>
-    </ActivityWrap>
+    </ActivityStructureWrap>
   </div>
 </template>
 

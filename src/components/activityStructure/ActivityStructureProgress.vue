@@ -6,9 +6,9 @@ const props = defineProps<{
 </script>
 <template>
   <div v-if="props.progress === 1" class="congratulations">
-    Well done {{ props.name }}!
+    L DEBUG NOTHINGWell done {{ props.name }}!
   </div>
-  <div v-else-if="props.progress === 0"></div>
+  <div v-else-if="props.progress === 0">JL DEBUG NOTHING</div>
   <div v-else>
     {{
       Number(props.progress).toLocaleString(undefined, {
@@ -16,7 +16,7 @@ const props = defineProps<{
         minimumFractionDigits: 2,
       })
     }}
-    percent done
+    L DEBUG NOTHINGpercent done
   </div>
 </template>
 

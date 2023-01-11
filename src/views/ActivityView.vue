@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import RefreshIcon from "../components/icons/IconRefresh.vue";
-import ActivityTitle from "../components/activities/ActivityTitle.vue";
-import ActivityProgress from "../components/activities/ActivityProgress.vue";
-import ActivityContent from "./ActivityContent.vue";
+import ActivityStructureTitle from "../components/activityStructure/ActivityStructureTitle.vue";
+import ActivityStructureProgress from "../components/activityStructure/ActivityStructureProgress.vue";
+import ActivityStructureContent from "../components/activityStructure/ActivityStructureContent.vue";
+import { ConfigTypes } from "../types/ConfigTypes";
 import settings from "../appsettings.json";
 const props = defineProps<{
   name: string;
@@ -13,7 +14,17 @@ const props = defineProps<{
 const user = computed(() => settings.users.find((x) => x.name === props.name));
 const section = computed(() => {
   if (user.value === undefined) {
-    return undefined;
+    return {
+      id: 0,
+      name: "",
+      type: "",
+      data: {
+        x: 0,
+        from: [],
+        type: "SelectX",
+        config: {},
+      },
+    };
   }
   return user.value.sections.find((x) => x.id === props.id);
 });
@@ -31,13 +42,13 @@ const refreshActivity = function () {
   <main>
     <div v-if="section === undefined">Loading...</div>
     <div v-else>
-      <ActivityTitle :title="activityTitle">
-        <ActivityProgress
+      <ActivityStructureTitle :title="activityTitle">
+        <ActivityStructureProgress
           :name="props.name"
           :progress="activityProgress"
-        ></ActivityProgress>
-      </ActivityTitle>
-      <ActivityContent
+        ></ActivityStructureProgress>
+      </ActivityStructureTitle>
+      <ActivityStructureContent
         :name="props.name"
         :section="section"
         :is-refreshing="isRefreshing"
@@ -45,7 +56,7 @@ const refreshActivity = function () {
         @refreshCompleted="isRefreshing = false"
         @progress="activityProgress = $event"
       >
-      </ActivityContent>
+      </ActivityStructureContent>
       <div style="display: flex; justify-content: space-around">
         <RefreshIcon @icon-clicked="refreshActivity" />
       </div>

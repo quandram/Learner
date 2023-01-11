@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import SelectX from "../components/activities/SelectX.vue";
-import Sums from "../components/activities/Sums.vue";
+import ActivitySelectX from "../activities/ActivitySelectX.vue";
+import ActivitySums from "../activities/ActivitySums.vue";
+import type { ConfigTypes } from "../../types/ConfigTypes";
+import type { ActivitySection } from "../../types/ActivitySectionType";
 
 const props = defineProps<{
   name: string;
-  section: object;
+  section: ActivitySection;
   isRefreshing: boolean;
 }>();
 </script>
 
 <template>
   <div v-if="props.section.type === 'SelectX'">
-    <SelectX
+    <ActivitySelectX
       :userName="props.name"
       :name="props.section.name"
       :x="props.section.data.x"
@@ -21,11 +23,11 @@ const props = defineProps<{
     />
   </div>
   <div v-else-if="props.section.type === 'Sums'">
-    <Sums
+    <ActivitySums
       :userName="props.name"
       :x="props.section.data.x"
       :type="props.section.data.type"
-      :sumConfig="props.section.data.sumConfig"
+      :config="props.section.data.config"
       :refresh="props.isRefreshing"
       v-bind="$attrs"
     />
