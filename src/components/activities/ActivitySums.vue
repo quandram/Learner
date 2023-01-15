@@ -36,7 +36,7 @@ let sums = ref<Array<Sum>>([
   },
 ]);
 const maxCols = 6;
-
+let refreshCount = ref<number>(0);
 onBeforeMount(() => {
   createSums();
   emit("setTitle", "Complete the sums");
@@ -49,6 +49,7 @@ watch(
       return;
     }
     createSums();
+    refreshCount.value++;
     emit("refreshCompleted");
   }
 );
@@ -246,6 +247,7 @@ const getCellTypeCSSClass = function (type: number) {
             <span v-if="n.value === undefined"></span>
             <span v-else :class="`cell ${getCellTypeCSSClass(n.type)}`">
               <OptionalInputCell
+                :key="refreshCount"
                 :value="n.value"
                 :isValueShown="n.isShown"
                 @isCorrect="n.isCorrect = $event"
