@@ -203,9 +203,7 @@ const validateSum = function (config: SumConfig, sum: number): boolean {
 };
 
 const correctEntries = computed(() => {
-  console.log("correctEntries");
-  console.log(sums.value);
-  if (sums.value[0].ok() === false) {
+  if (sums.value[0].sumLines.length === 0) {
     return 0;
   }
   return sums.value.filter((x) => x.ok()).length;
