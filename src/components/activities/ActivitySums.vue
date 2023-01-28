@@ -4,7 +4,7 @@ import ActivityStructureWrap from "../activityStructure/ActivityStructureWrap.vu
 import OptionalInputCell from "../OptionalInputCell.vue";
 import { evaluate } from "mathjs";
 import { ConfigTypes } from "../../types/ConfigTypes";
-import type { SumOperator } from "../../types/SumOperatorType";
+import type { SumOperatorConfig } from "../../types/SumOperatorConfigType";
 import type { CellValue } from "../../types/CellValueType";
 import type { SumConfig } from "../../types/SumConfigType";
 import type { Sum } from "../../types/SumType";
@@ -68,42 +68,52 @@ const createSums = function () {
     sums.value.push(constructSum(props.config[configForSum]));
   }
 };
-const getBullshitArray = function (x: number | undefined): CellValue[] {
-  const a = String(x);
-  const c = a.padStart(maxCols, "~");
-  const d = [...c];
-  const e = d.map((x: string) => x as CellValue);
-  return e;
+const getSumCellArray = function (x: number | undefined): CellValue[] {
+  return [...String(x).padStart(maxCols, "~")].map(
+    (x: string) => x as CellValue
+  );
 };
 const constructSum = function (config: SumConfig): Sum {
   const rowsToAdd =
     Math.floor(Math.random() * (config.rows.max - config.rows.min + 1)) +
     config.rows.min;
 
-  const getRandomNumberInRange = function () {
-    return (
-      Math.floor(Math.random() * (config.number.max - config.number.min + 1)) +
-      config.number.min
-    );
+  const getRandomNumberInRange = function (
+    minNumber: number,
+    maxNumber: number
+  ): number {
+    return Math.floor(Math.random() * (maxNumber - minNumber + 1)) + minNumber;
   };
 
-  const getSumLineObject = function (operator?: SumOperator): CellArray {
+  const getSumLineObject = function (
+    operatorConfig: SumOperatorConfig,
+    isFirstLine = false
+  ): CellArray {
     const cellArray: Cell[] = [];
     return {
-      n: getRandomNumberInRange(),
-      o: operator,
+      n: getRandomNumberInRange(
+        operatorConfig.number.min,
+        operatorConfig.number.max
+      ),
+      o: isFirstLine ? undefined : operatorConfig.operator,
       cells: cellArray,
     };
   };
 
   const sumLines: CellArray[] = [];
-  for (let i = 0; i < rowsToAdd; i++) {
+  // First two rows must use same operator Config for the sum to work
+  // So reduce iterations by 1 and add two rows on first iteration
+  for (let i = 0; i < rowsToAdd - 1; i++) {
+    const operatorSelection = Math.floor(
+      Math.random() * config.operatorConfig.length
+    );
+
     if (i === 0) {
-      sumLines.push(getSumLineObject());
-      continue;
+      sumLines.push(
+        getSumLineObject(config.operatorConfig[operatorSelection], true)
+      );
     }
-    const operator = Math.floor(Math.random() * config.operators.length);
-    sumLines.push(getSumLineObject(config.operators[operator]));
+    sumLines.push(getSumLineObject(config.operatorConfig[operatorSelection]));
   }
   const sum = evaluate(
     sumLines.reduce((prevValue, curValue) => {
@@ -117,7 +127,7 @@ const constructSum = function (config: SumConfig): Sum {
   if (validateSum(config, sum)) {
     let cellIds: number[][] = [];
     sumLines.map((x, xIndex) => {
-      x.cells = getBullshitArray(x.n).map((y, yIndex) => {
+      x.cells = getSumCellArray(x.n).map((y, yIndex) => {
         if (y === "~") {
           return {
             value: undefined,
@@ -154,7 +164,7 @@ const constructSum = function (config: SumConfig): Sum {
     sumLines.push({
       n: undefined,
       o: undefined,
-      cells: getBullshitArray(sum).map((x: CellValue, xIndex) => {
+      cells: getSumCellArray(sum).map((x: CellValue, xIndex) => {
         if (x === "~") {
           return {
             value: undefined,

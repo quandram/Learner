@@ -4,7 +4,6 @@ import RefreshIcon from "../components/icons/IconRefresh.vue";
 import ActivityStructureTitle from "../components/activityStructure/ActivityStructureTitle.vue";
 import ActivityStructureProgress from "../components/activityStructure/ActivityStructureProgress.vue";
 import ActivityStructureContent from "../components/activityStructure/ActivityStructureContent.vue";
-import { ConfigTypes } from "../types/ConfigTypes";
 import settings from "../appsettings.json";
 const props = defineProps<{
   name: string;

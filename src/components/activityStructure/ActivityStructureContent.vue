@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import ActivitySelectX from "../activities/ActivitySelectX.vue";
 import ActivitySums from "../activities/ActivitySums.vue";
-import type { ConfigTypes } from "../../types/ConfigTypes";
 import type { ActivitySection } from "../../types/ActivitySectionType";
 
 const props = defineProps<{
