@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, computed, watch } from "vue";
-import ActivityWrap from "./ActivityWrap.vue";
+import ActivityStructureWrap from "../activityStructure/ActivityStructureWrap.vue";
 
 const props = defineProps<{
   userName: string;
@@ -50,7 +50,7 @@ watch(correctEntries, (correctEntries: number) => {
 
 <template>
   <div>
-    <ActivityWrap>
+    <ActivityStructureWrap>
       <div
         v-for="x in selectedWords"
         :key="x.word"
@@ -59,7 +59,7 @@ watch(correctEntries, (correctEntries: number) => {
       >
         {{ x.word }}
       </div>
-    </ActivityWrap>
+    </ActivityStructureWrap>
   </div>
 </template>
 

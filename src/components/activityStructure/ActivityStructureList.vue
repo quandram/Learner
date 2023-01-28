@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { RouterLink } from "vue-router";
-import DocumentationIcon from "./icons/IconDocumentation.vue";
-import ToolingIcon from "./icons/IconTooling.vue";
-import SupportIcon from "./icons/IconSupport.vue";
-import ActivityListEntry from "./ActivityListEntry.vue";
+import DocumentationIcon from "../icons/IconDocumentation.vue";
+import ToolingIcon from "../icons/IconTooling.vue";
+import SupportIcon from "../icons/IconSupport.vue";
+import ActivityStructureListEntry from "./ActivityStructureListEntry.vue";
 
-import settings from "../appsettings.json";
+import settings from "../../appsettings.json";
 
 const props = defineProps<{
   name: string;
@@ -32,31 +32,31 @@ const user = computed(() => settings.users.find((u) => u.name === props.name));
     >
       <RouterLink :to="`/activity/${user.name}/${section.id}`">
         <div v-if="section.type === 'SelectX'">
-          <ActivityListEntry>
+          <ActivityStructureListEntry>
             <template #icon>
               <DocumentationIcon />
             </template>
             <template #heading>{{ section.name }}</template>
-            {{ section.data.x }} to get right!
-          </ActivityListEntry>
+            {{ section.data?.x }} to get right!
+          </ActivityStructureListEntry>
         </div>
         <div v-else-if="section.type === 'Sums'">
-          <ActivityListEntry>
+          <ActivityStructureListEntry>
             <template #icon>
               <DocumentationIcon />
             </template>
             <template #heading>{{ section.name }}</template>
-            {{ section.data.x }} to get right!
-          </ActivityListEntry>
+            {{ section.data?.x }} to get right!
+          </ActivityStructureListEntry>
         </div>
         <div v-else>
-          <ActivityListEntry>
+          <ActivityStructureListEntry>
             <template #icon>
               <ToolingIcon />
             </template>
-            <template #heading>Ooops</template>
+            <template #heading>Oops</template>
             So, I haven't implemented {{ section.type }} yet
-          </ActivityListEntry>
+          </ActivityStructureListEntry>
         </div>
       </RouterLink>
     </div>

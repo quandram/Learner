@@ -38,9 +38,6 @@ h3 {
   color: var(--color-heading);
 }
 
-.icon {
-}
-
 @media (min-width: 1024px) {
   .item {
     margin-top: 0;
