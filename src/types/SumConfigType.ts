@@ -1,12 +1,10 @@
-import type { SumOperator } from "./SumOperatorType";
-import type { SumConfigRow } from "./SumConfigRowType";
 import type { SumConfigNumber } from "./SumConfigNumberType";
+import type { SumOperatorConfig } from "./SumOperatorConfigType";
 
 export type SumConfig = {
   weight: number;
-  operators: Array<SumOperator>;
-  rows: SumConfigRow;
-  number: SumConfigNumber;
+  operatorConfig: Array<SumOperatorConfig>;
+  rows: SumConfigNumber;
   isPositive: boolean;
   isInteger: boolean;
 };
