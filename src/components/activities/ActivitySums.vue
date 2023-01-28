@@ -68,12 +68,10 @@ const createSums = function () {
     sums.value.push(constructSum(props.config[configForSum]));
   }
 };
-const getBullshitArray = function (x: number | undefined): CellValue[] {
-  const a = String(x);
-  const c = a.padStart(maxCols, "~");
-  const d = [...c];
-  const e = d.map((x: string) => x as CellValue);
-  return e;
+const getSumCellArray = function (x: number | undefined): CellValue[] {
+  return [...String(x).padStart(maxCols, "~")].map(
+    (x: string) => x as CellValue
+  );
 };
 const constructSum = function (config: SumConfig): Sum {
   const rowsToAdd =
@@ -117,7 +115,7 @@ const constructSum = function (config: SumConfig): Sum {
   if (validateSum(config, sum)) {
     let cellIds: number[][] = [];
     sumLines.map((x, xIndex) => {
-      x.cells = getBullshitArray(x.n).map((y, yIndex) => {
+      x.cells = getSumCellArray(x.n).map((y, yIndex) => {
         if (y === "~") {
           return {
             value: undefined,
@@ -154,7 +152,7 @@ const constructSum = function (config: SumConfig): Sum {
     sumLines.push({
       n: undefined,
       o: undefined,
-      cells: getBullshitArray(sum).map((x: CellValue, xIndex) => {
+      cells: getSumCellArray(sum).map((x: CellValue, xIndex) => {
         if (x === "~") {
           return {
             value: undefined,
